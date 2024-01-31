@@ -28,7 +28,10 @@ do
 done
 
 ./install.sh
-
+if [ ! -f "docker-compose.yaml" ]; then
+  echo "Error: docker-compose.yaml not found. Please check if all ENV variables are correclty set" >&2
+  exit 1
+fi
 if [ "$build_frontend" = true ] || [ "$no_args" = true ]; then
   (
     if [ ! -d "blockscout-frontend" ]; then
