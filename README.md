@@ -10,6 +10,8 @@ This toolkit is designed to streamline the setup and deployment of BlockScout al
 
 - Docker and Docker Compose installed on your machine.
 - Git installed for cloning repositories.
+- Make sure 80 port is open and not taken on the server
+- Make sure that 8080 and 8081 ports are open(on AWS you need to modify Security Group for that )
 
 ### Installation and Deployment
 1. Clone the repository:

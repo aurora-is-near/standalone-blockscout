@@ -134,41 +134,6 @@ services:
       # NEXT_PUBLIC_FEATURED_NETWORKS: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/featured_networks/aurora.json
       # NEXT_PUBLIC_NETWORK_ICON: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/favicon.svg
 
-  stats-db-init:
-    image: postgres:15
-    volumes:
-      - ./data/stats-db-data:/var/lib/postgresql/data
-    entrypoint:
-      - sh
-      - -c
-      - |
-        chown -R 2000:2000 /var/lib/postgresql/data
-
-  stats-db:
-    depends_on:
-      - backend
-    image: postgres:15
-    user: 2000:2000
-    shm_size: 256m
-    restart: always
-    container_name: 'stats-postgres'
-    command: postgres -c 'max_connections=200'
-    environment:
-        POSTGRES_DB: 'stats'
-        POSTGRES_USER: 'stats'
-        POSTGRES_PASSWORD: 'n0uejXPl61ci6ldCuE2gQU5Y'
-    ports:
-      - target: 5432
-        published: 7433
-    volumes:
-      - ./data/stats-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U stats -d stats"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   stats:
     image: ghcr.io/blockscout/stats:${STATS_DOCKER_TAG:-latest}
     pull_policy: always
@@ -176,14 +141,14 @@ services:
     restart: always
     container_name: 'stats'
     depends_on:
-      - "stats-db"
+      - db
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     env_file:
       -  config/common-stats.env
     environment:
-      - STATS__DB_URL=postgres://stats:n0uejXPl61ci6ldCuE2gQU5Y@stats-db:5432/stats
-      - STATS__BLOCKSCOUT_DB_URL=${STATS__BLOCKSCOUT_DB_URL-postgresql://blockscout:ceWb1MeLBEeOIfk65gU8EjF8@db:5432/blockscout}
+      - STATS__DB_URL=postgresql://blockscout:ceWb1MeLBEeOIfk65gU8EjF8@db:5432/stats
+      - STATS__BLOCKSCOUT_DB_URL=postgresql://blockscout:ceWb1MeLBEeOIfk65gU8EjF8@db:5432/blockscout
       - STATS__CREATE_DATABASE=true
       - STATS__RUN_MIGRATIONS=true
 
@@ -193,7 +158,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
-      - "./config/proxy:/etc/nginx/templates"
+      - "./data/proxy:/etc/nginx/templates"
     environment:
       BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://backend:4000}
       FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://frontend:3000}
@@ -221,6 +186,3 @@ services:
     container_name: 'smart-contract-verifier'
     env_file:
       - config/common-smart-contract-verifier.env
-    # ports:
-    #   - "8050:8050"
-    #   - "8051:8051"
