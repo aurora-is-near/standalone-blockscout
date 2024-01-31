@@ -32,6 +32,22 @@ if [ ! -f "docker-compose.yaml" ]; then
   echo "Error: docker-compose.yaml not found. Please check if all ENV variables are correclty set" >&2
   exit 1
 fi
+
+(
+  if [ ! -d "blockscout" ]; then
+    git clone https://github.com/aurora-is-near/blockscout
+  fi
+  cd blockscout
+  git pull origin master
+)
+
+if [ "$build_backend" = true ] || [ "$no_args" = true ]; then
+  docker-compose -f docker-compose.yaml build backend
+  if [ "$push_images" = true ]; then
+    docker-compose -f docker-compose.yaml push backend
+  fi
+fi
+
 if [ "$build_frontend" = true ] || [ "$no_args" = true ]; then
   (
     if [ ! -d "blockscout-frontend" ]; then
@@ -43,19 +59,5 @@ if [ "$build_frontend" = true ] || [ "$no_args" = true ]; then
   docker-compose -f docker-compose.yaml build frontend
   if [ "$push_images" = true ]; then
     docker-compose -f docker-compose.yaml push frontend
-  fi
-fi
-
-if [ "$build_backend" = true ] || [ "$no_args" = true ]; then
-  (
-    if [ ! -d "blockscout" ]; then
-      git clone https://github.com/aurora-is-near/blockscout
-    fi
-    cd blockscout
-    git pull origin master
-  )
-  docker-compose -f docker-compose.yaml build backend
-  if [ "$push_images" = true ]; then
-    docker-compose -f docker-compose.yaml push backend
   fi
 fi
