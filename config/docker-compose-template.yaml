@@ -50,7 +50,7 @@ services:
     build:
       context: blockscout/.
       dockerfile:  ../config/Dockerfile.backend
-    pull_policy: never
+    pull_policy: missing
     restart: always
     stop_grace_period: 5m
     container_name: 'backend'
@@ -74,8 +74,8 @@ services:
       JSON_RPC: http://{rpc_url}
       ETHEREUM_JSONRPC_WS_URL: ws://{rpc_url}
       ETHEREUM_JSONRPC_TRACE_URL: http://{rpc_url}
-      SUPPORTED_CHAINS: '[{ "title": "Mainnet", "url": "https://explorer.{rpc_url}" }]'
-      BLOCKSCOUT_HOST: "explorer.{rpc_url}"
+      SUPPORTED_CHAINS: '[{ "title": "Mainnet", "url": "https://{explorer_url}" }]'
+      BLOCKSCOUT_HOST: "{explorer_url}"
       CHAIN_ID: {chain_id}
       SECRET_KEY_BASE: {secret_key_base}
       FIRST_BLOCK: {genesis}
@@ -101,7 +101,7 @@ services:
     build:
       context: blockscout-frontend/.
       dockerfile:  Dockerfile
-    pull_policy: never
+    pull_policy: missing
     platform: linux/amd64
     restart: always
     container_name: 'frontend'
@@ -111,13 +111,13 @@ services:
       - backend
     environment:
       NEXT_PUBLIC_IS_TESTNET: false
-      NEXT_PUBLIC_API_HOST: explorer.{rpc_url}
-      NEXT_PUBLIC_STATS_API_HOST: http://explorer.{rpc_url}:8080
+      NEXT_PUBLIC_API_HOST: {explorer_url}
+      NEXT_PUBLIC_STATS_API_HOST: http://{explorer_url}:8080
       NEXT_PUBLIC_NETWORK_NAME: {name}
       NEXT_PUBLIC_NETWORK_SHORT_NAME: {name}
       NEXT_PUBLIC_NETWORK_ID: {chain_id}
-      NEXT_PUBLIC_APP_HOST: explorer.{rpc_url}
-      NEXT_PUBLIC_VISUALIZE_API_HOST: http://explorer.{rpc_url}:8081
+      NEXT_PUBLIC_APP_HOST: {explorer_url}
+      NEXT_PUBLIC_VISUALIZE_API_HOST: http://{explorer_url}:8081
       NEXT_PUBLIC_AD_BANNER_PROVIDER: none
       NEXT_PUBLIC_AD_TEXT_PROVIDER: none
       NEXT_PUBLIC_NETWORK_VERIFICATION_TYPE: validation
