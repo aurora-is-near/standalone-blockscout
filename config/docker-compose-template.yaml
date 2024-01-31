@@ -1,0 +1,226 @@
+version: '3.9'
+
+services:
+  redis_db:
+    image: 'redis:alpine'
+    container_name: redis_db
+    command: redis-server
+    volumes:
+      - ./data/redis-data:/data
+
+  db-init:
+    image: postgres:15
+    volumes:
+      - ./data/blockscout-db-data:/var/lib/postgresql/data
+    entrypoint:
+      - sh
+      - -c
+      - |
+        chown -R 2000:2000 /var/lib/postgresql/data
+
+  db:
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    image: postgres:15
+    user: 2000:2000
+    shm_size: 256m
+    restart: always
+    container_name: 'db'
+    command: postgres -c 'max_connections=500' -c 'client_connection_check_interval=60000'
+    environment:
+        POSTGRES_DB: 'blockscout'
+        POSTGRES_USER: 'blockscout'
+        POSTGRES_PASSWORD: 'ceWb1MeLBEeOIfk65gU8EjF8'
+    ports:
+      - target: 5432
+        published: 7432
+    volumes:
+      - ./data/blockscout-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blockscout -d blockscout"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+  backend:
+    image: auroraisnear/blockscout:latest
+    build:
+      context: blockscout/.
+      dockerfile:  ../config/Dockerfile.backend
+    pull_policy: never
+    restart: always
+    stop_grace_period: 5m
+    container_name: 'backend'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    env_file:
+      -  config/common-blockscout.env
+    volumes:
+      - ./data/logs/:/app/logs/
+    depends_on:
+      - db
+      - redis_db
+    extends:
+      file: ./blockscout/docker-compose/services/backend.yml
+      service: backend
+    links:
+      - db:database
+    command: "mix do ecto.create, ecto.migrate, phx.server"
+    environment:
+      ETHEREUM_JSONRPC_HTTP_URL: http://{rpc_url}
+      JSON_RPC: http://{rpc_url}
+      ETHEREUM_JSONRPC_WS_URL: ws://{rpc_url}
+      ETHEREUM_JSONRPC_TRACE_URL: http://{rpc_url}
+      SUPPORTED_CHAINS: '[{ "title": "Mainnet", "url": "https://explorer.{rpc_url}" }]'
+      BLOCKSCOUT_HOST: "explorer.{rpc_url}"
+      CHAIN_ID: {chain_id}
+      SECRET_KEY_BASE: {secret_key_base}
+      FIRST_BLOCK: {genesis}
+      TRACE_FIRST_BLOCK: {genesis}
+  visualizer:
+    image: ghcr.io/blockscout/visualizer:${VISUALIZER_DOCKER_TAG:-latest}
+    pull_policy: always
+    platform: linux/amd64
+    restart: always
+    container_name: 'visualizer'
+    env_file:
+      -  config/common-visualizer.env
+
+  sig-provider:
+    image: ghcr.io/blockscout/sig-provider:${SIG_PROVIDER_DOCKER_TAG:-latest}
+    pull_policy: always
+    platform: linux/amd64
+    restart: always
+    container_name: 'sig-provider'
+
+  frontend:
+    image: auroraisnear/blockscout-frontend:latest
+    build:
+      context: blockscout-frontend/.
+      dockerfile:  Dockerfile
+    pull_policy: never
+    platform: linux/amd64
+    restart: always
+    container_name: 'frontend'
+    env_file:
+      -  config/common-frontend.env
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_IS_TESTNET: false
+      NEXT_PUBLIC_API_HOST: explorer.{rpc_url}
+      NEXT_PUBLIC_STATS_API_HOST: http://explorer.{rpc_url}:8080
+      NEXT_PUBLIC_NETWORK_NAME: {name}
+      NEXT_PUBLIC_NETWORK_SHORT_NAME: {name}
+      NEXT_PUBLIC_NETWORK_ID: {chain_id}
+      NEXT_PUBLIC_APP_HOST: explorer.{rpc_url}
+      NEXT_PUBLIC_VISUALIZE_API_HOST: http://explorer.{rpc_url}:8081
+      NEXT_PUBLIC_AD_BANNER_PROVIDER: none
+      NEXT_PUBLIC_AD_TEXT_PROVIDER: none
+      NEXT_PUBLIC_NETWORK_VERIFICATION_TYPE: validation
+      NEXT_PUBLIC_NETWORK_RPC_URL: http://{rpc_url}
+      FAVICON_GENERATOR_API_KEY: {favicon_generator_api_key}
+      NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: {wallet_connect_project_id}
+      # NEXT_PUBLIC_API_PORT: 443
+      # NEXT_PUBLIC_API_PROTOCOL: https
+      # NEXT_PUBLIC_HOMEPAGE_CHARTS: '[]'
+      # NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: wss
+      # NEXT_PUBLIC_NEAR_NETWORK: mainnet
+      # NEXT_PUBLIC_NETWORK_LOGO: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/aurora_logo_primary_dark_v2.svg
+      # NEXT_PUBLIC_NETWORK_LOGO_DARK: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/aurora_logo_primary_light_v2.svg
+      # NEXT_PUBLIC_FEATURED_NETWORKS: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/featured_networks/aurora.json
+      # NEXT_PUBLIC_NETWORK_ICON: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/favicon.svg
+
+  stats-db-init:
+    image: postgres:15
+    volumes:
+      - ./data/stats-db-data:/var/lib/postgresql/data
+    entrypoint:
+      - sh
+      - -c
+      - |
+        chown -R 2000:2000 /var/lib/postgresql/data
+
+  stats-db:
+    depends_on:
+      - backend
+    image: postgres:15
+    user: 2000:2000
+    shm_size: 256m
+    restart: always
+    container_name: 'stats-postgres'
+    command: postgres -c 'max_connections=200'
+    environment:
+        POSTGRES_DB: 'stats'
+        POSTGRES_USER: 'stats'
+        POSTGRES_PASSWORD: 'n0uejXPl61ci6ldCuE2gQU5Y'
+    ports:
+      - target: 5432
+        published: 7433
+    volumes:
+      - ./data/stats-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stats -d stats"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  stats:
+    image: ghcr.io/blockscout/stats:${STATS_DOCKER_TAG:-latest}
+    pull_policy: always
+    platform: linux/amd64
+    restart: always
+    container_name: 'stats'
+    depends_on:
+      - "stats-db"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    env_file:
+      -  config/common-stats.env
+    environment:
+      - STATS__DB_URL=postgres://stats:n0uejXPl61ci6ldCuE2gQU5Y@stats-db:5432/stats
+      - STATS__BLOCKSCOUT_DB_URL=${STATS__BLOCKSCOUT_DB_URL-postgresql://blockscout:ceWb1MeLBEeOIfk65gU8EjF8@db:5432/blockscout}
+      - STATS__CREATE_DATABASE=true
+      - STATS__RUN_MIGRATIONS=true
+
+  proxy:
+    image: nginx
+    container_name: proxy
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - "./config/proxy:/etc/nginx/templates"
+    environment:
+      BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://backend:4000}
+      FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://frontend:3000}
+    ports:
+      - target: 80
+        published: 80
+      - target: 8080
+        published: 8080
+      - target: 8081
+        published: 8081
+      - target: 8050
+        published: 8050
+      - target: 8051
+        published: 8051
+    depends_on:
+      - backend
+      - frontend
+      - stats
+
+  smart-contract-verifier:
+    image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
+    pull_policy: always
+    platform: linux/amd64
+    restart: always
+    container_name: 'smart-contract-verifier'
+    env_file:
+      - config/common-smart-contract-verifier.env
+    # ports:
+    #   - "8050:8050"
+    #   - "8051:8051"

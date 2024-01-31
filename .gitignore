@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Visual Studio Code
+.vscode/
+
+# IDEA
+.idea
+
+
+# Installation artifacts of old versions (<2.0.2)
+/data
+/.env
+
+/blockscout
+/blockscout-frontend
+docker-compose.yaml
