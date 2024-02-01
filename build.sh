@@ -41,6 +41,14 @@ fi
   git pull origin master
 )
 
+(
+  if [ ! -d "blockscout-frontend" ]; then
+    git clone https://github.com/aurora-is-near/blockscout-frontend 
+  fi
+  cd blockscout-frontend
+  git pull origin main
+)
+
 if [ "$build_backend" = true ] || [ "$no_args" = true ]; then
   docker-compose -f docker-compose.yaml build backend
   if [ "$push_images" = true ]; then
@@ -49,13 +57,6 @@ if [ "$build_backend" = true ] || [ "$no_args" = true ]; then
 fi
 
 if [ "$build_frontend" = true ] || [ "$no_args" = true ]; then
-  (
-    if [ ! -d "blockscout-frontend" ]; then
-      git clone https://github.com/aurora-is-near/blockscout-frontend 
-    fi
-    cd blockscout-frontend
-    git pull origin main
-  )
   docker-compose -f docker-compose.yaml build frontend
   if [ "$push_images" = true ]; then
     docker-compose -f docker-compose.yaml push frontend
