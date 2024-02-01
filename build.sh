@@ -21,7 +21,6 @@ do
         ;;
         --push)
         push_images=true
-        no_args=false
         shift
         ;;
     esac

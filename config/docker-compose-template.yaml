@@ -46,7 +46,7 @@ services:
 
 
   backend:
-    image: auroraisnear/blockscout:latest
+    image: nearaurora/blockscout:latest
     build:
       context: blockscout/.
       dockerfile:  ../config/Dockerfile.backend
@@ -97,7 +97,7 @@ services:
     container_name: 'sig-provider'
 
   frontend:
-    image: auroraisnear/blockscout-frontend:latest
+    image: nearaurora/blockscout-frontend:latest
     build:
       context: blockscout-frontend/.
       dockerfile:  Dockerfile

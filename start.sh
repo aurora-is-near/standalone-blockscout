@@ -1,17 +1,26 @@
 #!/bin/sh
 
-# Flag for Docker pull policy
 docker_pull_policy=""
+build_flag=false
 
-# Check for --pull argument
 for arg in "$@"
 do
-    if [ "$arg" = "--pull" ]; then
+    case $arg in
+        --pull)
         docker_pull_policy="--pull always"
-    fi
+        ;;
+        --build)
+        build_flag=true
+        ;;
+    esac
 done
 
 ./install.sh
+
+# Check if --build flag was passed and run build.sh if true
+if [ "$build_flag" = true ]; then
+    ./build.sh
+fi
 
 # Start Docker Compose with conditional pull policy
 docker-compose -f docker-compose.yaml up -d $docker_pull_policy
