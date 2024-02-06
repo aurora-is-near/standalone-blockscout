@@ -49,15 +49,15 @@ fi
 )
 
 if [ "$build_backend" = true ] || [ "$no_args" = true ]; then
-  docker-compose -f docker-compose.yaml build backend
+  docker compose -f docker-compose.yaml build backend
   if [ "$push_images" = true ]; then
-    docker-compose -f docker-compose.yaml push backend
+    docker compose -f docker-compose.yaml push backend
   fi
 fi
 
 if [ "$build_frontend" = true ] || [ "$no_args" = true ]; then
-  docker-compose -f docker-compose.yaml build frontend
+  docker compose -f docker-compose.yaml build frontend
   if [ "$push_images" = true ]; then
-    docker-compose -f docker-compose.yaml push frontend
+    docker compose -f docker-compose.yaml push frontend
   fi
 fi

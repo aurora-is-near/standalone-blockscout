@@ -23,4 +23,4 @@ if [ "$build_flag" = true ]; then
 fi
 
 # Start Docker Compose with conditional pull policy
-docker-compose -f docker-compose.yaml up -d $docker_pull_policy
+docker compose -f docker-compose.yaml up -d $docker_pull_policy

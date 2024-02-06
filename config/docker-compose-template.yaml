@@ -3,13 +3,14 @@ version: '3.9'
 services:
   redis_db:
     image: 'redis:alpine'
-    container_name: redis_db
+    container_name: '{containers_prefix}redis_db'
     command: redis-server
     volumes:
       - ./data/redis-data:/data
 
   db-init:
     image: postgres:15
+    container_name: '{containers_prefix}db-init'
     volumes:
       - ./data/blockscout-db-data:/var/lib/postgresql/data
     entrypoint:
@@ -26,7 +27,7 @@ services:
     user: 2000:2000
     shm_size: 256m
     restart: always
-    container_name: 'db'
+    container_name: '{containers_prefix}db'
     command: postgres -c 'max_connections=500' -c 'client_connection_check_interval=60000'
     environment:
         POSTGRES_DB: 'blockscout'
@@ -47,13 +48,13 @@ services:
 
   backend:
     image: nearaurora/blockscout:latest
+    container_name: '{containers_prefix}backend'
     build:
       context: blockscout/.
       dockerfile:  ../config/Dockerfile.backend
     pull_policy: if_not_present
     restart: always
     stop_grace_period: 5m
-    container_name: 'backend'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     env_file:
@@ -63,71 +64,68 @@ services:
     depends_on:
       - db
       - redis_db
-    extends:
-      file: ./blockscout/docker-compose/services/backend.yml
-      service: backend
     links:
       - db:database
     command: "mix do ecto.create, ecto.migrate, phx.server"
     environment:
-      ETHEREUM_JSONRPC_HTTP_URL: http://{rpc_url}
-      JSON_RPC: http://{rpc_url}
-      ETHEREUM_JSONRPC_WS_URL: ws://{rpc_url}
-      ETHEREUM_JSONRPC_TRACE_URL: http://{rpc_url}
+      ETHEREUM_JSONRPC_HTTP_URL: "{rpc_http_protocol}://{rpc_url}"
+      JSON_RPC: "{rpc_http_protocol}://{rpc_url}"
+      ETHEREUM_JSONRPC_WS_URL: "{rpc_ws_protocol}://{rpc_url}"
+      ETHEREUM_JSONRPC_TRACE_URL: "{rpc_http_protocol}://{rpc_url}"
       SUPPORTED_CHAINS: '[{ "title": "Mainnet", "url": "https://{explorer_url}" }]'
       BLOCKSCOUT_HOST: "{explorer_url}"
       CHAIN_ID: {chain_id}
       SECRET_KEY_BASE: {secret_key_base}
-      FIRST_BLOCK: {genesis}
-      TRACE_FIRST_BLOCK: {genesis}
+      FIRST_BLOCK: "{genesis}"
+      TRACE_FIRST_BLOCK: "{genesis}"
   visualizer:
     image: ghcr.io/blockscout/visualizer:${VISUALIZER_DOCKER_TAG:-latest}
+    container_name: '{containers_prefix}visualizer'
     pull_policy: always
     platform: linux/amd64
     restart: always
-    container_name: 'visualizer'
     env_file:
       -  config/common-visualizer.env
 
   sig-provider:
     image: ghcr.io/blockscout/sig-provider:${SIG_PROVIDER_DOCKER_TAG:-latest}
+    container_name: '{containers_prefix}sig-provider'
     pull_policy: always
     platform: linux/amd64
     restart: always
-    container_name: 'sig-provider'
 
   frontend:
     image: nearaurora/blockscout-frontend:latest
+    container_name: '{containers_prefix}frontend'
     build:
       context: blockscout-frontend/.
       dockerfile:  Dockerfile
     pull_policy: if_not_present
     platform: linux/amd64
     restart: always
-    container_name: 'frontend'
     env_file:
       -  config/common-frontend.env
     depends_on:
-      - backend
+      - 'backend'
     environment:
       NEXT_PUBLIC_IS_TESTNET: "false"
       NEXT_PUBLIC_API_HOST: {explorer_url}
-      NEXT_PUBLIC_STATS_API_HOST: http://{explorer_url}:8080
+      NEXT_PUBLIC_STATS_API_HOST: "{blockscout_http_protocol}://{stats_api_host}"
       NEXT_PUBLIC_NETWORK_NAME: {name}
       NEXT_PUBLIC_NETWORK_SHORT_NAME: {name}
       NEXT_PUBLIC_NETWORK_ID: {chain_id}
       NEXT_PUBLIC_APP_HOST: {explorer_url}
-      NEXT_PUBLIC_VISUALIZE_API_HOST: http://{explorer_url}:8081
+      NEXT_PUBLIC_VISUALIZE_API_HOST: "{blockscout_http_protocol}://{visualizer_api_host}"
       NEXT_PUBLIC_AD_BANNER_PROVIDER: none
       NEXT_PUBLIC_AD_TEXT_PROVIDER: none
       NEXT_PUBLIC_NETWORK_VERIFICATION_TYPE: validation
-      NEXT_PUBLIC_NETWORK_RPC_URL: http://{rpc_url}
+      NEXT_PUBLIC_NETWORK_RPC_URL: "{rpc_http_protocol}://{rpc_url}"
       FAVICON_GENERATOR_API_KEY: {favicon_generator_api_key}
       NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: {wallet_connect_project_id}
+      NEXT_PUBLIC_API_PROTOCOL: {blockscout_http_protocol}
+      NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: {blockscout_ws_protocol}
       # NEXT_PUBLIC_API_PORT: 443
-      # NEXT_PUBLIC_API_PROTOCOL: https
       # NEXT_PUBLIC_HOMEPAGE_CHARTS: '[]'
-      # NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: wss
       # NEXT_PUBLIC_NEAR_NETWORK: mainnet
       # NEXT_PUBLIC_NETWORK_LOGO: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/aurora_logo_primary_dark_v2.svg
       # NEXT_PUBLIC_NETWORK_LOGO_DARK: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/aurora_logo_primary_light_v2.svg
@@ -136,10 +134,10 @@ services:
 
   stats:
     image: ghcr.io/blockscout/stats:${STATS_DOCKER_TAG:-latest}
+    container_name: '{containers_prefix}stats'
     pull_policy: always
     platform: linux/amd64
     restart: always
-    container_name: 'stats'
     depends_on:
       - db
     extra_hosts:
@@ -154,7 +152,7 @@ services:
 
   proxy:
     image: nginx
-    container_name: proxy
+    container_name: '{containers_prefix}proxy'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
@@ -164,11 +162,11 @@ services:
       FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://frontend:3000}
     ports:
       - target: 80
-        published: 80
+        published: {blockscout_port}
       - target: 8080
-        published: 8080
+        published: {stats_service_port}
       - target: 8081
-        published: 8081
+        published: {visualizer_service_port}
       - target: 8050
         published: 8050
       - target: 8051
@@ -180,9 +178,9 @@ services:
 
   smart-contract-verifier:
     image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
+    container_name: '{containers_prefix}smart-contract-verifier'
     pull_policy: always
     platform: linux/amd64
     restart: always
-    container_name: 'smart-contract-verifier'
     env_file:
       - config/common-smart-contract-verifier.env
