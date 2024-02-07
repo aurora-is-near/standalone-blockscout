@@ -115,7 +115,7 @@ proxy_file="./data/proxy/default.conf.template"
 
 # Create the directory for the proxy configuration file if it doesn't exist
 mkdir -p "$(dirname "$proxy_file")"
-cp "./config/proxy/proxy-settings.conf" "./data/proxy/proxy-settings.conf"
+cp "./config/proxy/proxy-settings.conf.template" "./data/proxy/proxy-settings.conf.template"
 
 # Replace placeholder in the proxy configuration file with actual value
 sed \
@@ -140,7 +140,7 @@ sed \
     $proxy_host_template_file > $proxy_host_file
 
 
-cp "./config/proxy/proxy-settings.conf" "./data/host_proxy/proxy-settings.conf"
+cp "./config/proxy/proxy-settings.conf.template" "./data/host_proxy/proxy-settings.conf"
 
 sed \
     -e "s/{ssl_certificate}/$ssl_certificate/g" \
