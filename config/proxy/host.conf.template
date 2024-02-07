@@ -1,0 +1,65 @@
+upstream tokenomia {
+    server localhost:{blockscout_port};
+}
+
+upstream stats {
+    server localhost:{stats_service_port};
+}
+
+upstream visualize {
+    server localhost:{visualizer_service_port};
+}
+
+
+
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name {explorer_url};
+    include ssl-config.conf;
+
+    location /metrics {
+        return 401;
+    }
+
+    location / {
+        client_body_buffer_size 64k;
+        proxy_pass http://tokenomia;
+        include proxy-settings.conf;
+    }
+}
+
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name stats.{explorer_url};
+    include ssl-config.conf;
+
+    location /metrics {
+        return 401;
+    }
+
+    location / {
+        client_body_buffer_size 64k;
+        proxy_pass http://stats;
+        include proxy-settings.conf;
+    }
+}
+
+
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name visualize.{explorer_url};
+    include ssl-config.conf;
+
+    location /metrics {
+        return 401;
+    }
+
+    location / {
+        client_body_buffer_size 64k;
+        proxy_pass http://visualize;
+        include proxy-settings.conf;
+    }
+}
