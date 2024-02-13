@@ -29,6 +29,7 @@ secret_key_base=$(openssl rand -hex 32)
 # Assign optional environment variables to local variables
 favicon_generator_api_key=$FAVICON_GENERATOR_API_KEY
 wallet_connect_project_id=$NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
+currency_symbol=$CURRENCY_SYMBOL
 
 blockscout_port=$BLOCKSCOUT_PORT
 if [ -z "$blockscout_port" ]; then
@@ -107,6 +108,7 @@ sed \
     -e "s/{blockscout_ws_protocol}/$blockscout_ws_protocol/g" \
     -e "s/{rpc_http_protocol}/$rpc_http_protocol/g" \
     -e "s/{rpc_ws_protocol}/$rpc_ws_protocol/g" \
+    -e "s/{currency_symbol}/$currency_symbol/g" \
     $dockercompose_template_file > $dockercompose_file
 
 # Define the paths for the proxy configuration template and the actual file
