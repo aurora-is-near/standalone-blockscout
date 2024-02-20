@@ -78,6 +78,8 @@ services:
       SECRET_KEY_BASE: {secret_key_base}
       FIRST_BLOCK: "{genesis}"
       TRACE_FIRST_BLOCK: "{genesis}"
+      MICROSERVICE_SC_VERIFIER_URL: "{verifier_url}"
+      MICROSERVICE_SC_VERIFIER_TYPE: "{verifier_type}"
   visualizer:
     image: ghcr.io/blockscout/visualizer:${VISUALIZER_DOCKER_TAG:-latest}
     container_name: '{containers_prefix}visualizer'
@@ -152,6 +154,16 @@ services:
       - STATS__CREATE_DATABASE=true
       - STATS__RUN_MIGRATIONS=true
 
+  smart-contract-verifier:
+    image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
+    container_name: '{containers_prefix}smart-contract-verifier'
+    pull_policy: always
+    platform: linux/amd64
+    restart: {smart_contract_verifier_restart_policy}
+    env_file:
+      - config/common-smart-contract-verifier.env
+    {smart_contract_verifier_disabled}
+
   proxy:
     image: nginx
     container_name: '{containers_prefix}proxy'
@@ -163,26 +175,11 @@ services:
       BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://backend:4000}
       FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://frontend:3000}
     ports:
-      - target: 80
-        published: {blockscout_port}
-      - target: 8080
-        published: {stats_service_port}
-      - target: 8081
-        published: {visualizer_service_port}
-      - target: 8050
-        published: 8050
-      - target: 8051
-        published: 8051
+      - "{blockscout_port}:80"
+      - "{stats_service_port}:8080"
+      - "{visualizer_service_port}:8081"
+      {smart_contract_verifier_port_mapping}
     depends_on:
       - backend
       - frontend
       - stats
-
-  smart-contract-verifier:
-    image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
-    container_name: '{containers_prefix}smart-contract-verifier'
-    pull_policy: always
-    platform: linux/amd64
-    restart: always
-    env_file:
-      - config/common-smart-contract-verifier.env

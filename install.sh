@@ -59,6 +59,29 @@ if [ -z "$visualizer_api_host" ]; then
     visualizer_api_host="$explorer_url:$visualizer_service_port"
 fi
 
+smart_contract_verifier_service_port=$SMART_CONTRACT_VERIFIER_SERVICE_PORT
+if [ -z "$smart_contract_verifier_service_port" ]; then
+    smart_contract_verifier_service_port="8050"
+fi
+
+verifier_type=$VERIFIER_TYPE
+if [ -z "$verifier_type" ]; then
+    verifier_type="eth_bytecode_db"
+fi
+
+
+if [ "$verifier_type" = "eth_bytecode_db" ]; then
+    verifier_url="https:\/\/eth-bytecode-db.services.blockscout.com\/"
+    smart_contract_verifier_restart_policy="no"
+    smart_contract_verifier_disabled="command: [\"true\"]"
+    smart_contract_verifier_port_mapping=""
+else
+    verifier_url="http:\/\/smart-contract-verifier:8050\/"
+    smart_contract_verifier_restart_policy="always"
+    smart_contract_verifier_disabled=""
+    smart_contract_verifier_port_mapping="- \"$smart_contract_verifier_service_port:8050\""
+fi
+
 containers_prefix=$CONTAINERS_PREFIX
 if [ -z "$containers_prefix" ]; then
     # Ensure it is empty
@@ -103,12 +126,18 @@ sed \
     -e "s/{stats_api_host}/$stats_api_host/g" \
     -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
     -e "s/{visualizer_api_host}/$visualizer_api_host/g" \
+    -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
     -e "s/{containers_prefix}/$containers_prefix/g" \
     -e "s/{blockscout_http_protocol}/$blockscout_http_protocol/g" \
     -e "s/{blockscout_ws_protocol}/$blockscout_ws_protocol/g" \
     -e "s/{rpc_http_protocol}/$rpc_http_protocol/g" \
     -e "s/{rpc_ws_protocol}/$rpc_ws_protocol/g" \
     -e "s/{currency_symbol}/$currency_symbol/g" \
+    -e "s/{verifier_type}/$verifier_type/g" \
+    -e "s/{smart_contract_verifier_restart_policy}/$smart_contract_verifier_restart_policy/g" \
+    -e "s/{smart_contract_verifier_disabled}/$smart_contract_verifier_disabled/g" \
+    -e "s/{verifier_url}/$verifier_url/g" \
+    -e "s/{smart_contract_verifier_port_mapping}/$smart_contract_verifier_port_mapping/g" \
     $dockercompose_template_file > $dockercompose_file
 
 # Define the paths for the proxy configuration template and the actual file
@@ -127,6 +156,7 @@ sed \
     -e "s/{blockscout_http_protocol}/$blockscout_http_protocol/g" \
     -e "s/{stats_service_port}/$stats_service_port/g" \
     -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
+    -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
     $proxy_template_file > $proxy_file
 
 proxy_host_template_file="./config/proxy/host.conf.template"
@@ -139,6 +169,7 @@ sed \
     -e "s/{blockscout_port}/$blockscout_port/g" \
     -e "s/{stats_service_port}/$stats_service_port/g" \
     -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
+    -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
     $proxy_host_template_file > $proxy_host_file
 
 
