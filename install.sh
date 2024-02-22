@@ -86,6 +86,8 @@ containers_prefix=$CONTAINERS_PREFIX
 if [ -z "$containers_prefix" ]; then
     # Ensure it is empty
     containers_prefix=""
+else 
+    [[ "$containers_prefix" != *- ]] && containers_prefix="${containers_prefix}-"
 fi
 
 blockscout_protocol=$BLOCKSCOUT_PROTOCOL
@@ -146,7 +148,6 @@ proxy_file="./data/proxy/default.conf.template"
 
 # Create the directory for the proxy configuration file if it doesn't exist
 mkdir -p "$(dirname "$proxy_file")"
-cp "./config/proxy/proxy-settings.conf.template" "./data/proxy/proxy-settings.conf.template"
 
 # Replace placeholder in the proxy configuration file with actual value
 sed \
@@ -166,16 +167,11 @@ mkdir -p "$(dirname "$proxy_host_file")"
 
 sed \
     -e "s/{explorer_url}/$explorer_url/g" \
+    -e "s/{containers_prefix}/$containers_prefix/g" \
     -e "s/{blockscout_port}/$blockscout_port/g" \
     -e "s/{stats_service_port}/$stats_service_port/g" \
     -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
     -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
-    $proxy_host_template_file > $proxy_host_file
-
-
-cp "./config/proxy/proxy-settings.conf.template" "./data/host_proxy/proxy-settings.conf"
-
-sed \
     -e "s/{ssl_certificate}/$ssl_certificate/g" \
     -e "s/{ssl_certificate_key}/$ssl_certificate_key/g" \
-    "./config/proxy/host-ssl-config.conf.template" > "./data/host_proxy/ssl-config.conf"
+    $proxy_host_template_file > $proxy_host_file
