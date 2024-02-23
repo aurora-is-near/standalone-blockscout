@@ -37,6 +37,12 @@ if [ -z "$blockscout_port" ]; then
     blockscout_port="80"
 fi
 
+postgres_port=$POSTGRES_PORT
+if [ -z "$postgres_port" ]; then
+    # Ensure it is empty
+    postgres_port="7432"
+fi
+
 stats_service_port=$STATS_SERVICE_PORT
 if [ -z "$stats_service_port" ]; then
     # Ensure it is empty
@@ -124,6 +130,7 @@ sed \
     -e "s/{wallet_connect_project_id}/$wallet_connect_project_id/g" \
     -e "s/{explorer_url}/$explorer_url/g" \
     -e "s/{blockscout_port}/$blockscout_port/g" \
+    -e "s/{postgres_port}/$postgres_port/g" \
     -e "s/{stats_service_port}/$stats_service_port/g" \
     -e "s/{stats_api_host}/$stats_api_host/g" \
     -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
