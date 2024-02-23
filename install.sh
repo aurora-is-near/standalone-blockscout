@@ -15,6 +15,9 @@ name=$NAME
 rpc_url=$RPC_URL
 chain_id=$CHAIN_ID
 genesis=$GENESIS
+network_logo=$NETWORK_LOGO
+network_logo_dark=$NETWORK_LOGO_DARK
+network_icon=$NETWORK_ICON
 
 # Check if EXPLORER_URL is set, if not, create it using rpc_url
 if [ -z "$EXPLORER_URL" ]; then
@@ -30,6 +33,11 @@ secret_key_base=$(openssl rand -hex 32)
 favicon_generator_api_key=$FAVICON_GENERATOR_API_KEY
 wallet_connect_project_id=$NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
 currency_symbol=$CURRENCY_SYMBOL
+
+
+if [ -z "$network" ]; then
+    network="mainnet"
+fi
 
 blockscout_port=$BLOCKSCOUT_PORT
 if [ -z "$blockscout_port" ]; then
@@ -114,6 +122,11 @@ else
     rpc_ws_protocol="ws"
 fi
 
+if [ "$network" = "mainnet" ]; then
+    is_testnet="false"
+else
+    is_testnet="true"
+fi
 
 # Define the paths for the Docker Compose template and the actual file
 dockercompose_template_file="./config/docker-compose-template.yaml"
@@ -146,6 +159,11 @@ sed \
     -e "s/{smart_contract_verifier_restart_policy}/$smart_contract_verifier_restart_policy/g" \
     -e "s/{smart_contract_verifier_disabled}/$smart_contract_verifier_disabled/g" \
     -e "s/{verifier_url}/$verifier_url/g" \
+    -e "s/{is_testnet}/$is_testnet/g" \
+    -e "s/{network}/$network/g" \
+    -e "s|{network_logo}|$network_logo|g" \
+    -e "s|{network_logo_dark}|$network_logo_dark|g" \
+    -e "s|{network_icon}|$network_icon|g" \
     -e "s/{smart_contract_verifier_port_mapping}/$smart_contract_verifier_port_mapping/g" \
     $dockercompose_template_file > $dockercompose_file
 
