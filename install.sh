@@ -128,6 +128,11 @@ else
     is_testnet="true"
 fi
 
+cpu_limit=$CPU_LIMIT
+if [ -z "$cpu_limit" ]; then
+    cpu_limit="1"
+fi
+
 # Define the paths for the Docker Compose template and the actual file
 dockercompose_template_file="./config/docker-compose-template.yaml"
 dockercompose_file="docker-compose.yaml"

@@ -44,15 +44,39 @@ If no options are provided, the script defaults to building both the frontend an
 
 #### Environment Variables
 
-Before running the script, ensure the following environment variables are set, as they are required for the configuration:
+This project uses environment variables for configuration. Below is a list of required and optional variables:
 
-- `NAME`: The name of your application.
-- `RPC_URL`: The RPC URL for the blockchain network.
-- `CHAIN_ID`: The chain ID of the blockchain network.
-- `SILO_GENESIS`: The genesis block information.
-- `EXPLORER_URL` (optional): The URL of the explorer. If not set, it defaults to `explorer.$RPC_URL`.
-- `FAVICON_GENERATOR_API_KEY` (optional): API key for the favicon generator.
-- `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` (optional): Project ID for WalletConnect.
+##### Required Configuration
+
+- **`NAME`**: The name of your Silo. This is a required configuration.
+- **`CHAIN_ID`**: The chain ID of the Silo. This is a required configuration.
+- **`NETWORK`**: The network of the Silo, could be `mainnet` or `testnet`. This is a required configuration.
+- **`GENESIS`**: A decimal number defining the genesis block number of the Silo. This is a required configuration.
+- **`RPC_URL`**: The RPC URL of the Silo. This is a required configuration.
+- **`CONTAINERS_PREFIX`**: Prefix for the containers to avoid name conflicts. Example: 'mainnet-'. This is a required configuration.
+- **`BLOCKSCOUT_PROTOCOL`**: The protocol (secured or unsecured) for Blockscout frontend and backend. This is a required configuration.
+- **`RPC_PROTOCOL`**: The protocol (secured or unsecured) for Ethereum JSON RPC. This is a required configuration.
+- **`CURRENCY_SYMBOL`**: The currency symbol of the Silo (e.g., ETH). This is a required configuration.
+- **`VERIFIER_TYPE`**: Type of smart contract microservice, either `eth_bytecode_db` or `sc_verifier`. This is a required configuration.
+- **`CPU_LIMIT`**: CPU limit for the indexer containers (e.g., "1.0"). This is a required configuration.
+
+##### Optional Configuration
+
+- **`EXPLORER_URL`**: The EXPLORER_URL of the Silo. If not provided, `explorer.{RPC_URL}` will be used.
+- **`FAVICON_GENERATOR_API_KEY`**: Favorite icon generator API key.
+- **`NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID`**: Wallet Connect Project ID.
+- **`BLOCKSCOUT_PORT`**: Blockscout port. Default is 80.
+- **`POSTGRES_PORT`**: Postgres port. Default is 7432.
+- **`STATS_SERVICE_PORT`**: Stats service port. Default is 8080.
+- **`VISUALIZER_SERVICE_PORT`**: Visualizer service port. Default is 8081.
+- **`SMART_CONTRACT_VERIFIER_SERVICE_PORT`**: Smart Contract Verifier service port. Default is 8050.
+- **`STATS_API_HOST`**: Stats API host. Overrides the default host constructed from explorer URL and stats service port.
+- **`VISUALIZER_API_HOST`**: Visualizer API host. Overrides the default host constructed from explorer URL and visualizer service port.
+- **`SSL_CERTIFICATE`**: Path to the SSL certificate.
+- **`SSL_CERTIFICATE_KEY`**: Path to the SSL certificate key.
+- **`NETWORK_LOGO`**: The URL of the network logo.
+- **`NETWORK_LOGO_DARK`**: The URL of the network logo for dark mode.
+- **`NETWORK_ICON`**: The URL of the network icon.
 
 The script will check for these variables and exit with an error message if any required variable is not set.
 

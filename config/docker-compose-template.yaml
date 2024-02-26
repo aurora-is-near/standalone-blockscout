@@ -34,8 +34,7 @@ services:
         POSTGRES_USER: 'blockscout'
         POSTGRES_PASSWORD: 'ceWb1MeLBEeOIfk65gU8EjF8'
     ports:
-      - target: 5432
-        published: {postgres_port}
+      - "{postgres_port}:5432"
     volumes:
       - ./data/blockscout-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -52,6 +51,10 @@ services:
     build:
       context: blockscout/.
       dockerfile:  ../config/Dockerfile.backend
+    deploy:
+      resources:
+        limits:
+          cpus: "{cpu_limit}"
     pull_policy: if_not_present
     restart: always
     stop_grace_period: 5m

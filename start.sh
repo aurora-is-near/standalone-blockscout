@@ -15,8 +15,6 @@ do
     esac
 done
 
-./install.sh
-
 # Check if --build flag was passed and run build.sh if true
 if [ "$build_flag" = true ]; then
     ./build.sh
