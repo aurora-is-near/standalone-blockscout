@@ -165,6 +165,7 @@ sed \
     -e "s/{smart_contract_verifier_disabled}/$smart_contract_verifier_disabled/g" \
     -e "s/{verifier_url}/$verifier_url/g" \
     -e "s/{is_testnet}/$is_testnet/g" \
+    -e "s/{cpu_limit}/$cpu_limit/g" \
     -e "s/{network}/$network/g" \
     -e "s|{network_logo}|$network_logo|g" \
     -e "s|{network_logo_dark}|$network_logo_dark|g" \
