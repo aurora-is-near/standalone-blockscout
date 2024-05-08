@@ -15,3 +15,4 @@
 /blockscout
 /blockscout-frontend
 docker-compose.yaml
+config/*.env

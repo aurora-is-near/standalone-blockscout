@@ -30,7 +30,7 @@ if [ -n "$backend_version" ]; then
   fi
   cd blockscout
   git pull origin master
-  docker build --file docker/Dockerfile --tag "aurora-is-near/blockscout:$backend_version" .
+  docker build --file docker/Dockerfile --build-arg=RELEASE_VERSION=$backend_version --tag "aurora-is-near/blockscout:$backend_version" .
   if [ "$push_images" = true ]; then
     docker push aurora-is-near/blockscout:$backend_version 
   fi

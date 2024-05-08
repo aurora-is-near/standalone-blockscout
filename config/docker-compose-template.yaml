@@ -79,7 +79,7 @@ services:
       RE_CAPTCHA_DISABLED: "true"
       DISABLE_WEBAPP: "true"
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
-      INDEXER_CATCHUP_BLOCKS_BATCH_SIZE: 5
+      INDEXER_CATCHUP_BLOCKS_BATCH_SIZE: 90
       INDEXER_RECEIPTS_BATCH_SIZE: 90
       INDEXER_INTERNAL_TRANSACTIONS_TRACER_TYPE: "call_tracer"
       ETHEREUM_JSONRPC_HTTP_URL: "{rpc_http_protocol}://{rpc_url}"
@@ -145,9 +145,9 @@ services:
       NEXT_PUBLIC_NETWORK_LOGO: {network_logo}
       NEXT_PUBLIC_NETWORK_LOGO_DARK: {network_logo_dark}
       NEXT_PUBLIC_NETWORK_ICON: {network_icon}
-      # NEXT_PUBLIC_API_PORT: 443
+      NEXT_PUBLIC_FEATURED_NETWORKS: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/featured_networks/aurora.json
       # NEXT_PUBLIC_HOMEPAGE_CHARTS: '[]'
-      # NEXT_PUBLIC_FEATURED_NETWORKS: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/featured_networks/aurora.json
+      # NEXT_PUBLIC_API_PORT: 443
 
   stats:
     image: ghcr.io/blockscout/stats:${STATS_DOCKER_TAG:-latest}
