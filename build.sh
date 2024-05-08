@@ -30,7 +30,7 @@ if [ -n "$backend_version" ]; then
   fi
   cd blockscout
   git pull origin master
-  docker build --file docker/Dockerfile --build-arg=RELEASE_VERSION=$backend_version --tag "aurora-is-near/blockscout:$backend_version" .
+  docker build --file docker/Dockerfile --build-arg=RELEASE_VERSION=$backend_version --tag "nearaurora/blockscout:$backend_version" .
   if [ "$push_images" = true ]; then
     docker push nearaurora/blockscout:$backend_version 
   fi
@@ -44,7 +44,7 @@ if [ -n "$frontend_version" ]; then
   fi
   cd blockscout-frontend
   git pull origin main
-  docker build --file Dockerfile --tag "aurora-is-near/blockscout-frontend:$frontend_version" .
+  docker build --file Dockerfile --tag "nearaurora/blockscout-frontend:$frontend_version" .
     if [ "$push_images" = true ]; then
       docker push nearaurora/blockscout-frontend:$frontend_version
     fi
