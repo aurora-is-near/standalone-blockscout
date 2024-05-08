@@ -206,3 +206,5 @@ sed \
     -e "s/{ssl_certificate}/$ssl_certificate/g" \
     -e "s/{ssl_certificate_key}/$ssl_certificate_key/g" \
     $proxy_host_template_file > $proxy_host_file
+
+    ./download
