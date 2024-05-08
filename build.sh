@@ -1,22 +1,19 @@
-# !/bin/sh
+#!/bin/sh
 
-build_backend=false
-build_frontend=false
+backend_version=""
+frontend_version=""
 push_images=false
-no_args=true
 
 # Parse command-line arguments
 for arg in "$@"
 do
     case $arg in
-        --backend)
-        build_backend=true
-        no_args=false
+        --backend=*)
+        backend_version="${arg#*=}"
         shift
         ;;
-        --frontend)
-        build_frontend=true
-        no_args=false
+        --frontend=*)
+        frontend_version="${arg#*=}"
         shift
         ;;
         --push)
@@ -26,38 +23,30 @@ do
     esac
 done
 
-./install.sh
-if [ ! -f "docker-compose.yaml" ]; then
-  echo "Error: docker-compose.yaml not found. Please check if all ENV variables are correclty set" >&2
-  exit 1
-fi
-
+if [ -n "$backend_version" ]; then
 (
   if [ ! -d "blockscout" ]; then
     git clone https://github.com/aurora-is-near/blockscout
   fi
   cd blockscout
   git pull origin master
+  docker build --file docker/Dockerfile --tag "aurora-is-near/backend:$backend_version" .
+  if [ "$push_images" = true ]; then
+    docker push aurora-is-near/backend:$backend_version 
+  fi
 )
+fi
 
+if [ -n "$frontend_version" ]; then
 (
   if [ ! -d "blockscout-frontend" ]; then
     git clone https://github.com/aurora-is-near/blockscout-frontend 
   fi
   cd blockscout-frontend
   git pull origin main
+  docker build --file Dockerfile --tag "aurora-is-near/frontend:$frontend_version" .
+    if [ "$push_images" = true ]; then
+      docker push aurora-is-near/frontend:$frontend_version
+    fi
 )
-
-if [ "$build_backend" = true ] || [ "$no_args" = true ]; then
-  docker compose -f docker-compose.yaml build backend
-  if [ "$push_images" = true ]; then
-    docker compose -f docker-compose.yaml push backend
-  fi
-fi
-
-if [ "$build_frontend" = true ] || [ "$no_args" = true ]; then
-  docker compose -f docker-compose.yaml build frontend
-  if [ "$push_images" = true ]; then
-    docker compose -f docker-compose.yaml push frontend
-  fi
 fi
