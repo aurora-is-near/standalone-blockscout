@@ -18,6 +18,9 @@ server {
     proxy_read_timeout 3600s;
     proxy_send_timeout 3600s;
 
+    location = /api-docs {
+        proxy_pass            ${FRONT_PROXY_PASS};
+    }
     location ~ ^/(api|socket|sitemap.xml|auth/auth0|auth/auth0/callback|auth/logout) {
         proxy_pass            ${BACK_PROXY_PASS};
     }
