@@ -46,11 +46,8 @@ services:
 
 
   backend:
-    image: nearaurora/blockscout:latest
+    image: ghcr.io/aurora-is-near/blockscout:latest
     container_name: '{containers_prefix}backend'
-    build:
-      context: blockscout/.
-      dockerfile:  ../config/Dockerfile.backend
     deploy:
       resources:
         limits:
@@ -112,11 +109,8 @@ services:
     restart: always
 
   frontend:
-    image: nearaurora/blockscout-frontend:latest
+    image: ghcr.io/aurora-is-near/blockscout-frontend:latest
     container_name: '{containers_prefix}frontend'
-    build:
-      context: blockscout-frontend/.
-      dockerfile:  Dockerfile
     pull_policy: always
     platform: linux/amd64
     restart: always
@@ -166,13 +160,14 @@ services:
       - STATS__BLOCKSCOUT_DB_URL=postgresql://blockscout:ceWb1MeLBEeOIfk65gU8EjF8@db:5432/blockscout
       - STATS__CREATE_DATABASE=true
       - STATS__RUN_MIGRATIONS=true
+      - STATS__BLOCKSCOUT_API_URL={blockscout_http_protocol}://{explorer_url}
 
   smart-contract-verifier:
     image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
     container_name: '{containers_prefix}smart-contract-verifier'
     pull_policy: always
     platform: linux/amd64
-    restart: {smart_contract_verifier_restart_policy}
+    restart: '{smart_contract_verifier_restart_policy}'
     env_file:
       - config/common-smart-contract-verifier.env
     {smart_contract_verifier_disabled}
