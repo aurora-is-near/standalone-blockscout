@@ -68,7 +68,7 @@ services:
       - db:database
     command: sh -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     environment:
-      COIN: "ETH"
+      COIN: "{currency_symbol}"
       HIDE_UNCLES: "true"
       HIDE_BLOCK_MINER: "true"
       DISPLAY_TOKEN_ICONS: "true"
@@ -161,6 +161,7 @@ services:
       - STATS__CREATE_DATABASE=true
       - STATS__RUN_MIGRATIONS=true
       - STATS__BLOCKSCOUT_API_URL={blockscout_http_protocol}://{explorer_url}
+      - STATS_CHARTS__TEMPLATE_VALUES__NATIVE_COIN_SYMBOL={currency_symbol}
 
   smart-contract-verifier:
     image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
