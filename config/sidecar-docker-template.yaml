@@ -1,0 +1,15 @@
+  sidecar:
+    command:
+      - sh
+      - -c
+      - /app/app sidecar --config /app/config/sidecar.yaml
+    container_name: {containers_prefix}sidecar
+    image: ghcr.io/aurora-is-near/blockscout-vc:latest
+    networks:
+      - {containers_prefix}network
+    pull_policy: always
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.yaml:/app/docker-compose.yaml
