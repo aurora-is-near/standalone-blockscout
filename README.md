@@ -49,11 +49,11 @@ This project uses environment variables for configuration. Below is a list of re
 ##### Required Configuration
 
 - **`NAME`**: The name of your Silo. This is a required configuration.
+- **`NAMESPACE`**: Unique identifier for the deployment, used for container naming and directory structure
 - **`CHAIN_ID`**: The chain ID of the Silo. This is a required configuration.
 - **`NETWORK`**: The network of the Silo, could be `mainnet` or `testnet`. This is a required configuration.
 - **`GENESIS`**: A decimal number defining the genesis block number of the Silo. This is a required configuration.
 - **`RPC_URL`**: The RPC URL of the Silo. This is a required configuration.
-- **`CONTAINERS_PREFIX`**: Prefix for the containers to avoid name conflicts. Example: 'mainnet-'. This is a required configuration.
 - **`BLOCKSCOUT_PROTOCOL`**: The protocol (secured or unsecured) for Blockscout frontend and backend. This is a required configuration.
 - **`RPC_PROTOCOL`**: The protocol (secured or unsecured) for Ethereum JSON RPC. This is a required configuration.
 - **`CURRENCY_SYMBOL`**: The currency symbol of the Silo (e.g., ETH). This is a required configuration.
@@ -77,6 +77,13 @@ This project uses environment variables for configuration. Below is a list of re
 - **`NETWORK_LOGO`**: The URL of the network logo.
 - **`NETWORK_LOGO_DARK`**: The URL of the network logo for dark mode.
 - **`NETWORK_ICON`**: The URL of the network icon.
+- **`REMOTE_HOST`**: SSH host for remote deployment
+- **`REMOTE_DIR`**: Remote directory for deployment
+- **`BRANCH`**: Git branch to use for deployment (defaults to "master")
+- **`SIDECAR_ENABLED`**: Enable sidecar service (defaults to false)
+- **`SUPABASE_URL`**: Supabase database URL (required if SIDECAR_ENABLED=true)
+- **`SUPABASE_REALTIME_URL`**: Supabase realtime URL (required if SIDECAR_ENABLED=true)
+- **`SUPABASE_ANON_KEY`**: Supabase anonymous key (required if SIDECAR_ENABLED=true)
 
 The script will check for these variables and exit with an error message if any required variable is not set.
 

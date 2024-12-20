@@ -16,3 +16,9 @@
 /blockscout-frontend
 docker-compose.yaml
 config/*.env
+
+# Add to existing .gitignore
+.env*
+config/sidecar.yaml
+
+dns

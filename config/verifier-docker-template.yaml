@@ -1,0 +1,10 @@
+  smart-contract-verifier:
+    image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
+    container_name: '{containers_prefix}smart-contract-verifier'
+    pull_policy: always
+    platform: linux/amd64
+    restart: 'always'
+    env_file:
+      - config/common-smart-contract-verifier.env
+    networks:
+      - {containers_prefix}network

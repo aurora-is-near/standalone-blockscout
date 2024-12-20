@@ -1,0 +1,12 @@
+supabaseUrl: {supabase_url}
+supabaseRealtimeUrl: {supabase_realtime_url}
+supabaseAnonKey: {supabase_anon_key}
+pathToDockerCompose: "/app/docker-compose.yaml"
+frontendServiceName: "frontend"
+frontendContainerName: "{containers_prefix}frontend"
+backendServiceName: "backend"
+backendContainerName: "{containers_prefix}backend"
+statsServiceName: "stats"
+statsContainerName: "{containers_prefix}stats"
+table: "silos"
+chainId: {chain_id}
