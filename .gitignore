@@ -22,3 +22,8 @@ config/*.env
 config/sidecar.yaml
 
 dns
+
+*.env
+
+# Add to existing .gitignore
+.postgres_password

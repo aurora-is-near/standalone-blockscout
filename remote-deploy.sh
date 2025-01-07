@@ -11,8 +11,13 @@ while [[ $# -gt 0 ]]; do
             ENV_FILE="${1#*=}"
             shift
             ;;
+        --branch=*)
+            branch="${1#*=}"
+            shift
+            ;;
         *)
             echo "Unknown parameter: $1"
+            echo "Usage: ./remote-deploy.sh [--env=filename.env] [--branch=branch_name]"
             exit 1
             ;;
     esac
@@ -30,7 +35,10 @@ set -a # automatically export all variables
 source "$ENV_FILE"
 set +a
 
-# Set default branch if not specified
+# Set default branch if not specified in env file or command line
+if [ -z "$branch" ]; then
+    branch="${BRANCH:-master}"
+fi
 
 # Check required environment variables
 if [ -z "$REMOTE_HOST" ]; then

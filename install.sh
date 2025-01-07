@@ -1,14 +1,58 @@
 #!/bin/sh
 
+# Default values
+ENV_FILE=".env"
+
+# Parse command line arguments
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --env=*)
+            ENV_FILE="${1#*=}"
+            shift
+            ;;
+        *)
+            echo "Unknown parameter: $1"
+            echo "Usage: ./install.sh [--env=filename.env]"
+            exit 1
+            ;;
+    esac
+done
+
+# Check if env file exists
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Error: Environment file $ENV_FILE not found!"
+    exit 1
+fi
+
 echo "Loading environment variables..."
 set -a # automatically export all variables
-source ".env"
+source "$ENV_FILE"
 set +a
 
 # Set CONTAINERS_PREFIX if not explicitly set
 if [ -z "$CONTAINERS_PREFIX" ]; then
     CONTAINERS_PREFIX="${NAMESPACE}-"
     export CONTAINERS_PREFIX
+fi
+
+# Set deployment directory name
+DEPLOY_DIR="standalone-blockscout-$NAMESPACE"
+
+# Set deployment directory for persistent data
+data_dir="$REMOTE_DIR/$DEPLOY_DIR"
+postgres_password_file="$data_dir/.postgres_password"
+echo "Data directory: $data_dir"
+
+# Generate or read PostgreSQL password
+if [ -f "$postgres_password_file" ]; then
+    echo "Reading existing PostgreSQL password..."
+    postgres_password=$(cat "$postgres_password_file")
+else
+    echo "Generating new PostgreSQL password..."
+    postgres_password=$(openssl rand -hex 16)
+    # Ensure data directory exists
+    mkdir -p "$data_dir"
+    echo "$postgres_password" > "$postgres_password_file"
 fi
 
 # Check for required environment variables
@@ -42,9 +86,6 @@ fi
 
 # Generate a random secret key
 secret_key_base=$(openssl rand -hex 32)
-
-# Generate a random PostgreSQL password
-postgres_password=$(openssl rand -hex 16)
 
 # Assign optional environment variables to local variables
 favicon_generator_api_key=$FAVICON_GENERATOR_API_KEY
