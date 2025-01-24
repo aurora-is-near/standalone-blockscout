@@ -13,47 +13,6 @@ services:
     networks:
       - {containers_prefix}network
 
-  db-init:
-    image: postgres:15
-    container_name: '{containers_prefix}db-init'
-    volumes:
-      - ./data/blockscout-db-data:/var/lib/postgresql/data
-    entrypoint:
-      - sh
-      - -c
-      - |
-        chown -R 2000:2000 /var/lib/postgresql/data
-    networks:
-      - {containers_prefix}network
-
-  db:
-    depends_on:
-      db-init:
-        condition: service_completed_successfully
-    image: postgres:15
-    user: 2000:2000
-    shm_size: 256m
-    restart: always
-    container_name: '{containers_prefix}db'
-    command: postgres -c 'max_connections=500' -c 'client_connection_check_interval=60000'
-    environment:
-        POSTGRES_DB: 'blockscout'
-        POSTGRES_USER: 'blockscout'
-        POSTGRES_PASSWORD: '{postgres_password}'
-    ports:
-      - "{postgres_port}:5432"
-    volumes:
-      - ./data/blockscout-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U blockscout -d blockscout"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - {containers_prefix}network
-
-
   backend:
     image: ghcr.io/aurora-is-near/blockscout:latest
     container_name: '{containers_prefix}backend'
@@ -71,13 +30,11 @@ services:
     volumes:
       - ./data/logs/:/app/logs/
     depends_on:
-      - db
       - redis_db
-    links:
-      - db:database
+      {depends_on_db}
     command: sh -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     environment:
-      DATABASE_URL: postgresql://blockscout:{postgres_password}@db:5432/blockscout
+      DATABASE_URL: {database_url}
       COIN: "{currency_symbol}"
       HIDE_UNCLES: "true"
       HIDE_BLOCK_MINER: "true"
@@ -170,14 +127,15 @@ services:
     platform: linux/amd64
     restart: always
     depends_on:
-      - db
+      - backend
+      {depends_on_db}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     env_file:
       -  config/common-stats.env
     environment:
-      STATS__DB_URL: postgresql://blockscout:{postgres_password}@db:5432/stats
-      STATS__BLOCKSCOUT_DB_URL: postgresql://blockscout:{postgres_password}@db:5432/blockscout
+      STATS__DB_URL: {database_url}-stats
+      STATS__BLOCKSCOUT_DB_URL: {database_url}
       STATS__CREATE_DATABASE: true
       STATS__RUN_MIGRATIONS: true
       STATS__BLOCKSCOUT_API_URL: http://backend:4000

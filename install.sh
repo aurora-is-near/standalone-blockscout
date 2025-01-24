@@ -40,20 +40,7 @@ DEPLOY_DIR="standalone-blockscout-$NAMESPACE"
 
 # Set deployment directory for persistent data
 data_dir="$REMOTE_DIR/$DEPLOY_DIR"
-postgres_password_file="$data_dir/.postgres_password"
 echo "Data directory: $data_dir"
-
-# Generate or read PostgreSQL password
-if [ -f "$postgres_password_file" ]; then
-    echo "Reading existing PostgreSQL password..."
-    postgres_password=$(cat "$postgres_password_file")
-else
-    echo "Generating new PostgreSQL password..."
-    postgres_password=$(openssl rand -hex 16)
-    # Ensure data directory exists
-    mkdir -p "$data_dir"
-    echo "$postgres_password" > "$postgres_password_file"
-fi
 
 # Check for required environment variables
 required_vars="NAME NAMESPACE RPC_URL CHAIN_ID GENESIS BLOCKSCOUT_PROTOCOL RPC_PROTOCOL CURRENCY_SYMBOL VERIFIER_TYPE CPU_LIMIT"
@@ -64,6 +51,30 @@ for var in $required_vars; do
     exit 1
   fi
 done
+
+# Check if using external database
+if [ -n "$DATABASE_URL" ]; then
+    echo "Using external database configuration..."
+    postgres_password=""  # Empty since we're using external DB
+    database_url=$DATABASE_URL
+    depends_on_db=""
+else
+    echo "Using local database configuration..."
+    postgres_password_file="$data_dir/.postgres_password"
+    # Generate or read PostgreSQL password
+    if [ -f "$postgres_password_file" ]; then
+        echo "Reading existing PostgreSQL password..."
+        postgres_password=$(cat "$postgres_password_file")
+    else
+        echo "Generating new PostgreSQL password..."
+        postgres_password=$(openssl rand -hex 16)
+        # Ensure data directory exists
+        mkdir -p "$data_dir"
+        echo "$postgres_password" > "$postgres_password_file"
+    fi
+    database_url="postgresql://blockscout:$postgres_password@db:5432/blockscout"
+    depends_on_db="- db"
+fi
 
 # Assign environment variables to local variables for easier use
 name=$NAME
@@ -224,7 +235,11 @@ sed \
     -e "s|{network_logo_dark}|$network_logo_dark|g" \
     -e "s|{network_icon}|$network_icon|g" \
     -e "s/{smart_contract_verifier_port_mapping}/$smart_contract_verifier_port_mapping/g" \
+    -e "s|{database_url}|$database_url|g" \
+    -e "s|{depends_on_db}|$depends_on_db|g" \
     $dockercompose_template_file > $dockercompose_file
+
+echo "dockercompose_file: $dockercompose_file"
 
 # Append sidecar configuration if enabled
 if [ "$SIDECAR_ENABLED" = "true" ]; then
@@ -241,6 +256,17 @@ if [ "$verifier_type" != "eth_bytecode_db" ]; then
         -e "s/{containers_prefix}/$containers_prefix/g" \
         config/verifier-docker-template.yaml >> $dockercompose_file
 fi
+
+# If using external database, update the database URLs
+if [ -z "$DATABASE_URL" ]; then
+    echo "Adding database configuration..."
+    sed \
+        -e "s/{containers_prefix}/$containers_prefix/g" \
+        -e "s/{postgres_password}/$postgres_password/g" \
+        -e "s/{postgres_port}/$postgres_port/g" \
+        config/database-docker-template.yaml >> $dockercompose_file
+fi
+
 
 # Generate proxy configurations
 echo "Generating proxy configurations..."
