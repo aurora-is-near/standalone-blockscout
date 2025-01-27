@@ -31,6 +31,7 @@ services:
       - ./data/logs/:/app/logs/
     depends_on:
       - redis_db
+      - db_ro_user_setup
       {depends_on_db}
     command: sh -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     environment:
@@ -165,3 +166,34 @@ services:
       - stats
     networks:
       - {containers_prefix}network
+
+  db_ro_user_setup:
+    image: postgres:15
+    container_name: '{containers_prefix}db-setup'
+    restart: "no"
+    command: >
+      /bin/sh -c "
+        until psql '{database_url}' -c '\q'; do
+          echo 'Waiting for database to be ready...'
+          sleep 5
+        done
+        echo 'Creating readonly user...'
+        psql '{database_url}' -v ON_ERROR_STOP=1 <<-EOSQL
+          DO \$$BEGIN
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'blockscout_ro') THEN
+              CREATE USER blockscout_ro WITH PASSWORD '{postgres_ro_password}';
+              GRANT CONNECT ON DATABASE blockscout TO blockscout_ro;
+              GRANT USAGE ON SCHEMA public TO blockscout_ro;
+              GRANT SELECT ON ALL TABLES IN SCHEMA public TO blockscout_ro;
+              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO blockscout_ro;
+            END IF;
+          END\$$;
+        EOSQL
+        exit 0
+      "
+    networks:
+      - {containers_prefix}network
+    depends_on:
+      {depends_on_db}
+    labels:
+      com.docker.compose.ephemeral: "true"
