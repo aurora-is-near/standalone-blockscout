@@ -43,7 +43,7 @@ data_dir="$REMOTE_DIR/$DEPLOY_DIR"
 echo "Data directory: $data_dir"
 
 # Check for required environment variables
-required_vars="NAME NAMESPACE RPC_URL CHAIN_ID GENESIS BLOCKSCOUT_PROTOCOL RPC_PROTOCOL CURRENCY_SYMBOL VERIFIER_TYPE CPU_LIMIT"
+required_vars="NAME NAMESPACE RPC_URL CHAIN_ID GENESIS BLOCKSCOUT_PROTOCOL RPC_PROTOCOL CURRENCY_SYMBOL VERIFIER_TYPE CPU_LIMIT POSTGRES_RO_PASSWORD"
 for var in $required_vars; do
   # If any required variable is not set, print an error message and exit
   if [ -z "$(eval echo \$$var)" ]; then
@@ -58,6 +58,9 @@ if [ -n "$DATABASE_URL" ]; then
     postgres_password=""  # Empty since we're using external DB
     database_url=$DATABASE_URL
     depends_on_db=""
+    depends_on_db_list="[]"
+    # Extract database name from DATABASE_URL
+    database_name=$(echo "$DATABASE_URL" | sed -n 's/.*\/\([^?]*\).*/\1/p')
 else
     echo "Using local database configuration..."
     postgres_password_file="$data_dir/.postgres_password"
@@ -74,6 +77,8 @@ else
     fi
     database_url="postgresql://blockscout:$postgres_password@db:5432/blockscout"
     depends_on_db="- db"
+    depends_on_db_list="[db]"
+    database_name="blockscout"
 fi
 
 # Assign environment variables to local variables for easier use
@@ -87,6 +92,7 @@ network_icon=$NETWORK_ICON
 supabase_url=$SUPABASE_URL
 supabase_realtime_url=$SUPABASE_REALTIME_URL
 supabase_anon_key=$SUPABASE_ANON_KEY
+postgres_ro_password=$POSTGRES_RO_PASSWORD
 
 # Check if EXPLORER_URL is set, if not, create it using rpc_url
 if [ -z "$EXPLORER_URL" ]; then
@@ -236,7 +242,10 @@ sed \
     -e "s|{network_icon}|$network_icon|g" \
     -e "s/{smart_contract_verifier_port_mapping}/$smart_contract_verifier_port_mapping/g" \
     -e "s|{database_url}|$database_url|g" \
+    -e "s|{database_name}|$database_name|g" \
     -e "s|{depends_on_db}|$depends_on_db|g" \
+    -e "s|{depends_on_db_list}|$depends_on_db_list|g" \
+    -e "s|{postgres_ro_password}|$postgres_ro_password|g" \
     $dockercompose_template_file > $dockercompose_file
 
 echo "dockercompose_file: $dockercompose_file"
