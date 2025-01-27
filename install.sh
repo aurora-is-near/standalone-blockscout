@@ -58,6 +58,7 @@ if [ -n "$DATABASE_URL" ]; then
     postgres_password=""  # Empty since we're using external DB
     database_url=$DATABASE_URL
     depends_on_db=""
+    depends_on_db_list="[]"  # Empty list for depends_on when using external DB
 else
     echo "Using local database configuration..."
     postgres_password_file="$data_dir/.postgres_password"
@@ -74,6 +75,7 @@ else
     fi
     database_url="postgresql://blockscout:$postgres_password@db:5432/blockscout"
     depends_on_db="- db"
+    depends_on_db_list="[db]"  # List with local DB dependency
 fi
 
 # Assign environment variables to local variables for easier use
@@ -239,6 +241,7 @@ sed \
     -e "s|{database_url}|$database_url|g" \
     -e "s|{depends_on_db}|$depends_on_db|g" \
     -e "s|{postgres_ro_password}|$postgres_ro_password|g" \
+    -e "s|{depends_on_db_list}|$depends_on_db_list|g" \
     $dockercompose_template_file > $dockercompose_file
 
 echo "dockercompose_file: $dockercompose_file"

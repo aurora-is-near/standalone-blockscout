@@ -193,7 +193,6 @@ services:
       "
     networks:
       - {containers_prefix}network
-    depends_on:
-      {depends_on_db}
+    depends_on: {depends_on_db_list}
     labels:
       com.docker.compose.ephemeral: "true"
