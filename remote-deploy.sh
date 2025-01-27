@@ -71,13 +71,10 @@ echo "Deploying to $REMOTE_HOST..."
 cat << EOF > deploy_commands.sh
 #!/bin/bash
 
-# Switch to root using doas
-doas su - << 'EOSUDO'
+# Create directory if it doesn't exist (this still needs root)
+doas mkdir -p $REMOTE_DIR
+doas chown \$USER:$USER $REMOTE_DIR
 
-# Create directory if it doesn't exist
-mkdir -p $REMOTE_DIR
-
-# Clone repository
 cd $REMOTE_DIR
 if [ -d "$DEPLOY_DIR" ]; then
     echo "Directory exists, pulling latest changes..."
@@ -101,13 +98,10 @@ mv /tmp/.env $REMOTE_DIR/$DEPLOY_DIR/.env
 echo "Running installation script..."
 cd $REMOTE_DIR/$DEPLOY_DIR && ./install.sh
 
-# Start the services
+# Start the services without root
 echo "Starting services..."
 docker compose -f docker-compose.yaml up -d --force-recreate
 
-# Exit from root shell
-exit
-EOSUDO
 EOF
 
 # Make the deployment script executable
