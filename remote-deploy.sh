@@ -100,7 +100,7 @@ cd $REMOTE_DIR/$DEPLOY_DIR && ./install.sh
 
 # Start the services without root
 echo "Starting services..."
-docker compose -f docker-compose.yaml up -d --force-recreate
+docker compose --project-name $NAMESPACE-blockscout -f docker-compose.yaml up -d --force-recreate --remove-orphans
 
 EOF
 
