@@ -1,12 +1,19 @@
 networks:
   {containers_prefix}network:
-    driver: bridge
     name: {containers_prefix}default
+    driver: bridge
+    enable_ipv6: false
     ipam:
       driver: default
       config:
-        - subnet: 172.{network_octet}.0.0/16
-          gateway: 172.{network_octet}.0.1
+        - subnet: "172.{network_octet}.0.0/16"
+          gateway: "172.{network_octet}.0.1"
+          ip_range: "172.{network_octet}.0.0/24"
+          aux_addresses:
+            frontend: "172.{network_octet}.0.10"
+            proxy: "172.{network_octet}.0.11"
+            backend: "172.{network_octet}.0.12"
+            stats: "172.{network_octet}.0.13"
 
 services:
   redis_db:
@@ -68,7 +75,7 @@ services:
       SOURCIFY_INTEGRATION_ENABLED: "true"
     networks:
       {containers_prefix}network:
-        ipv4_address: 172.{network_octet}.0.12
+        ipv4_address: "172.{network_octet}.0.12"
 
   visualizer:
     image: ghcr.io/blockscout/visualizer:${VISUALIZER_DOCKER_TAG:-latest}
@@ -126,7 +133,7 @@ services:
       NEXT_PUBLIC_HOMEPAGE_CHARTS: '[]'
     networks:
       {containers_prefix}network:
-        ipv4_address: 172.{network_octet}.0.10
+        ipv4_address: "172.{network_octet}.0.10"
 
   stats:
     image: ghcr.io/blockscout/stats:${STATS_DOCKER_TAG:-latest}
@@ -150,7 +157,7 @@ services:
       STATS_CHARTS__TEMPLATE_VALUES__NATIVE_COIN_SYMBOL: {currency_symbol}
     networks:
       {containers_prefix}network:
-        ipv4_address: 172.{network_octet}.0.13
+        ipv4_address: "172.{network_octet}.0.13"
 
   proxy:
     image: nginx
@@ -174,7 +181,7 @@ services:
       - stats
     networks:
       {containers_prefix}network:
-        ipv4_address: 172.{network_octet}.0.11
+        ipv4_address: "172.{network_octet}.0.11"
 
   db_ro_user_setup:
     image: postgres:15
