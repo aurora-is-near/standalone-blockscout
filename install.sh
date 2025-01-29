@@ -199,6 +199,12 @@ if [ -z "$cpu_limit" ]; then
     cpu_limit="1"
 fi
 
+# Set network octet
+network_octet=${NETWORK_OCTET:-$(echo "$NAMESPACE" | cksum | cut -d' ' -f1 | awk '{print $1 % 255}')}
+if [ "$network_octet" -eq "0" ]; then
+    network_octet=1
+fi
+
 # Generate configurations
 echo "Generating configurations..."
 
@@ -246,6 +252,7 @@ sed \
     -e "s|{depends_on_db}|$depends_on_db|g" \
     -e "s|{depends_on_db_list}|$depends_on_db_list|g" \
     -e "s|{postgres_ro_password}|$postgres_ro_password|g" \
+    -e "s|{network_octet}|$network_octet|g" \
     $dockercompose_template_file > $dockercompose_file
 
 echo "dockercompose_file: $dockercompose_file"
