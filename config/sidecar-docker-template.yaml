@@ -13,3 +13,7 @@
       - ./config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker-compose.yaml:/app/docker-compose.yaml
+    depends_on:
+      - backend
+      - stats
+      - frontend
