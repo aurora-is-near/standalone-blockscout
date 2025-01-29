@@ -2,6 +2,9 @@ networks:
   {containers_prefix}network:
     driver: bridge
     name: {containers_prefix}default
+    ipam:
+      config:
+        - subnet: 172.{network_octet}.0.0/16  # Dynamic subnet based on namespace
 
 services:
   redis_db:
@@ -62,7 +65,8 @@ services:
       MICROSERVICE_SC_VERIFIER_TYPE: "{verifier_type}"
       SOURCIFY_INTEGRATION_ENABLED: "true"
     networks:
-      - {containers_prefix}network
+      {containers_prefix}network:
+        ipv4_address: 172.{network_octet}.0.12
 
   visualizer:
     image: ghcr.io/blockscout/visualizer:${VISUALIZER_DOCKER_TAG:-latest}
@@ -119,7 +123,8 @@ services:
       NEXT_PUBLIC_FEATURED_NETWORKS: https://raw.githubusercontent.com/aurora-is-near/blockscout-frontend/main/public/static/featured_networks/aurora.json
       NEXT_PUBLIC_HOMEPAGE_CHARTS: '[]'
     networks:
-      - {containers_prefix}network
+      {containers_prefix}network:
+        ipv4_address: 172.{network_octet}.0.10
 
   stats:
     image: ghcr.io/blockscout/stats:${STATS_DOCKER_TAG:-latest}
@@ -139,10 +144,11 @@ services:
       STATS__BLOCKSCOUT_DB_URL: {database_url}
       STATS__CREATE_DATABASE: true
       STATS__RUN_MIGRATIONS: true
-      STATS__BLOCKSCOUT_API_URL: http://backend:4000
+      STATS__BLOCKSCOUT_API_URL: http://172.{network_octet}.0.12:4000
       STATS_CHARTS__TEMPLATE_VALUES__NATIVE_COIN_SYMBOL: {currency_symbol}
     networks:
-      - {containers_prefix}network
+      {containers_prefix}network:
+        ipv4_address: 172.{network_octet}.0.13
 
   proxy:
     image: nginx
@@ -153,8 +159,8 @@ services:
       - "./data/proxy:/etc/nginx/templates"
     restart: always
     environment:
-      BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://backend:4000}
-      FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://frontend:3000}
+      BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://172.{network_octet}.0.12:4000}
+      FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://172.{network_octet}.0.10:3000}
     ports:
       - "{blockscout_port}:80"
       - "{stats_service_port}:8080"
@@ -165,7 +171,8 @@ services:
       - frontend
       - stats
     networks:
-      - {containers_prefix}network
+      {containers_prefix}network:
+        ipv4_address: 172.{network_octet}.0.11
 
   db_ro_user_setup:
     image: postgres:15
