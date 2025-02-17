@@ -17,3 +17,12 @@
       - backend
       - stats
       - frontend
+    labels: [ "com.centurylinklabs.watchtower.scope={containers_prefix}blockscout" ]  
+  watchtower:
+    image: containrrr/watchtower
+    container_name: {containers_prefix}-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels: [ "com.centurylinklabs.watchtower.scope={containers_prefix}blockscout" ]
+    command: --interval 30 --scope {containers_prefix}blockscout sidecar
