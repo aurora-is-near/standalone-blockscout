@@ -25,4 +25,4 @@
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels: [ "com.centurylinklabs.watchtower.scope={containers_prefix}blockscout" ]
-    command: --interval 30 --scope {containers_prefix}blockscout sidecar
+    command: --interval 30 --scope {containers_prefix}blockscout {containers_prefix}sidecar
