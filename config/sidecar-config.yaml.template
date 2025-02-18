@@ -11,3 +11,4 @@ statsContainerName: "{containers_prefix}stats"
 table: "silos"
 chainId: {chain_id}
 projectName: {containers_prefix}blockscout
+pathToEnvFile: "/app/config/sidecar-injected.env"
