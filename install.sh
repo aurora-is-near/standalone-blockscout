@@ -208,130 +208,117 @@ fi
 # Generate configurations
 echo "Generating configurations..."
 
+apply_template() {
+    local source_file="$1"
+    local dest_file="$2"
+
+    if [ ! -f "$source_file" ]; then
+        echo "Error: Source template file $source_file not found!"
+        exit 1
+    fi
+
+    echo "Generating $dest_file from $source_file..."
+    
+    sed \
+        -e "s/{name}/$name/g" \
+        -e "s/{rpc_url}/$rpc_url/g" \
+        -e "s/{chain_id}/$chain_id/g" \
+        -e "s/{genesis}/$genesis/g" \
+        -e "s/{secret_key_base}/$secret_key_base/g" \
+        -e "s/{postgres_password}/$postgres_password/g" \
+        -e "s/{favicon_generator_api_key}/$favicon_generator_api_key/g" \
+        -e "s/{wallet_connect_project_id}/$wallet_connect_project_id/g" \
+        -e "s/{explorer_url}/$explorer_url/g" \
+        -e "s/{blockscout_port}/$blockscout_port/g" \
+        -e "s/{postgres_port}/$postgres_port/g" \
+        -e "s/{stats_service_port}/$stats_service_port/g" \
+        -e "s/{stats_api_host}/$stats_api_host/g" \
+        -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
+        -e "s/{visualizer_api_host}/$visualizer_api_host/g" \
+        -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
+        -e "s/{containers_prefix}/$containers_prefix/g" \
+        -e "s/{blockscout_http_protocol}/$blockscout_http_protocol/g" \
+        -e "s/{blockscout_ws_protocol}/$blockscout_ws_protocol/g" \
+        -e "s/{rpc_http_protocol}/$rpc_http_protocol/g" \
+        -e "s/{rpc_ws_protocol}/$rpc_ws_protocol/g" \
+        -e "s/{currency_symbol}/$currency_symbol/g" \
+        -e "s/{verifier_type}/$verifier_type/g" \
+        -e "s/{smart_contract_verifier_restart_policy}/$smart_contract_verifier_restart_policy/g" \
+        -e "s/{smart_contract_verifier_disabled}/$smart_contract_verifier_disabled/g" \
+        -e "s/{verifier_url}/$verifier_url/g" \
+        -e "s/{is_testnet}/$is_testnet/g" \
+        -e "s/{cpu_limit}/$cpu_limit/g" \
+        -e "s/{network}/$network/g" \
+        -e "s|{network_logo}|$network_logo|g" \
+        -e "s|{network_logo_dark}|$network_logo_dark|g" \
+        -e "s|{network_icon}|$network_icon|g" \
+        -e "s/{smart_contract_verifier_port_mapping}/$smart_contract_verifier_port_mapping/g" \
+        -e "s|{database_url}|$database_url|g" \
+        -e "s|{database_name}|$database_name|g" \
+        -e "s|{depends_on_db}|$depends_on_db|g" \
+        -e "s|{depends_on_db_list}|$depends_on_db_list|g" \
+        -e "s|{postgres_ro_password}|$postgres_ro_password|g" \
+        -e "s|{network_octet}|$network_octet|g" \
+        -e "s|{supabase_url}|$supabase_url|g" \
+        -e "s|{supabase_realtime_url}|$supabase_realtime_url|g" \
+        -e "s|{supabase_anon_key}|$supabase_anon_key|g" \
+        -e "s/{ssl_certificate}/$ssl_certificate/g" \
+        -e "s/{ssl_certificate_key}/$ssl_certificate_key/g" \
+        "$source_file" >> "$dest_file"
+}
+
+# Generate configurations
+echo "Generating configurations..."
+
 # Define the paths for the Docker Compose template and the actual file
-dockercompose_template_file="./config/docker-compose-template.yaml"
 dockercompose_file="docker-compose.yaml"
 
-# Replace placeholders in the Docker Compose file with actual values
-sed \
-    -e "s/{name}/$name/g" \
-    -e "s/{rpc_url}/$rpc_url/g" \
-    -e "s/{chain_id}/$chain_id/g" \
-    -e "s/{genesis}/$genesis/g" \
-    -e "s/{secret_key_base}/$secret_key_base/g" \
-    -e "s/{postgres_password}/$postgres_password/g" \
-    -e "s/{favicon_generator_api_key}/$favicon_generator_api_key/g" \
-    -e "s/{wallet_connect_project_id}/$wallet_connect_project_id/g" \
-    -e "s/{explorer_url}/$explorer_url/g" \
-    -e "s/{blockscout_port}/$blockscout_port/g" \
-    -e "s/{postgres_port}/$postgres_port/g" \
-    -e "s/{stats_service_port}/$stats_service_port/g" \
-    -e "s/{stats_api_host}/$stats_api_host/g" \
-    -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
-    -e "s/{visualizer_api_host}/$visualizer_api_host/g" \
-    -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
-    -e "s/{containers_prefix}/$containers_prefix/g" \
-    -e "s/{blockscout_http_protocol}/$blockscout_http_protocol/g" \
-    -e "s/{blockscout_ws_protocol}/$blockscout_ws_protocol/g" \
-    -e "s/{rpc_http_protocol}/$rpc_http_protocol/g" \
-    -e "s/{rpc_ws_protocol}/$rpc_ws_protocol/g" \
-    -e "s/{currency_symbol}/$currency_symbol/g" \
-    -e "s/{verifier_type}/$verifier_type/g" \
-    -e "s/{smart_contract_verifier_restart_policy}/$smart_contract_verifier_restart_policy/g" \
-    -e "s/{smart_contract_verifier_disabled}/$smart_contract_verifier_disabled/g" \
-    -e "s/{verifier_url}/$verifier_url/g" \
-    -e "s/{is_testnet}/$is_testnet/g" \
-    -e "s/{cpu_limit}/$cpu_limit/g" \
-    -e "s/{network}/$network/g" \
-    -e "s|{network_logo}|$network_logo|g" \
-    -e "s|{network_logo_dark}|$network_logo_dark|g" \
-    -e "s|{network_icon}|$network_icon|g" \
-    -e "s/{smart_contract_verifier_port_mapping}/$smart_contract_verifier_port_mapping/g" \
-    -e "s|{database_url}|$database_url|g" \
-    -e "s|{database_name}|$database_name|g" \
-    -e "s|{depends_on_db}|$depends_on_db|g" \
-    -e "s|{depends_on_db_list}|$depends_on_db_list|g" \
-    -e "s|{postgres_ro_password}|$postgres_ro_password|g" \
-    -e "s|{network_octet}|$network_octet|g" \
-    $dockercompose_template_file > $dockercompose_file
+> "$dockercompose_file"
+# Generate Docker Compose file
+apply_template "./config/docker-compose.yaml.template" "$dockercompose_file"
 
-echo "dockercompose_file: $dockercompose_file"
-
-# Append sidecar configuration if enabled
-if [ "$SIDECAR_ENABLED" = "true" ]; then
-    echo "Adding sidecar configuration..."
-    sed \
-        -e "s/{containers_prefix}/$containers_prefix/g" \
-        config/sidecar-docker-template.yaml >> $dockercompose_file
-fi
-
-# Append verifier configuration if not using eth_bytecode_db
-if [ "$verifier_type" != "eth_bytecode_db" ]; then
-    echo "Adding verifier configuration..."
-    sed \
-        -e "s/{containers_prefix}/$containers_prefix/g" \
-        config/verifier-docker-template.yaml >> $dockercompose_file
-fi
-
-# If using external database, update the database URLs
-if [ -z "$DATABASE_URL" ]; then
-    echo "Adding database configuration..."
-    sed \
-        -e "s/{containers_prefix}/$containers_prefix/g" \
-        -e "s/{postgres_password}/$postgres_password/g" \
-        -e "s/{postgres_port}/$postgres_port/g" \
-        config/database-docker-template.yaml >> $dockercompose_file
-fi
+for service in "blockscout" "frontend" "stats" "sidecar-injected"; do
+    echo "Generating ${service} configuration..."
+    > "./config/${service}.env"
+    apply_template "./config/${service}.env.template" "./config/${service}.env"
+done
 
 
 # Generate proxy configurations
 echo "Generating proxy configurations..."
 
-# Define proxy configuration paths
-proxy_template_file="./config/proxy/default.conf.template"
-proxy_file="./data/proxy/default.conf.template"
-
-# Create proxy directory
-mkdir -p "$(dirname "$proxy_file")"
-
 # Generate proxy configuration
-sed \
-    -e "s/{explorer_url}/$explorer_url/g" \
-    -e "s/{containers_prefix}/$containers_prefix/g" \
-    -e "s/{blockscout_port}/$blockscout_port/g" \
-    -e "s/{blockscout_http_protocol}/$blockscout_http_protocol/g" \
-    -e "s/{stats_service_port}/$stats_service_port/g" \
-    -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
-    -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
-    $proxy_template_file > $proxy_file
+> "./data/proxy/default.conf.template"
+apply_template "./config/proxy/default.conf.template" "./data/proxy/default.conf.template"
 
 # Generate host proxy configuration
-proxy_host_template_file="./config/proxy/host.conf.template"
 proxy_host_file="./data/host_proxy/host.conf"
 
 mkdir -p "$(dirname "$proxy_host_file")"
+> "$proxy_host_file"
+apply_template "./config/proxy/host.conf.template" "$proxy_host_file"
 
-sed \
-    -e "s/{explorer_url}/$explorer_url/g" \
-    -e "s/{containers_prefix}/$containers_prefix/g" \
-    -e "s/{blockscout_port}/$blockscout_port/g" \
-    -e "s/{stats_service_port}/$stats_service_port/g" \
-    -e "s/{visualizer_service_port}/$visualizer_service_port/g" \
-    -e "s/{smart_contract_verifier_service_port}/$smart_contract_verifier_service_port/g" \
-    -e "s/{ssl_certificate}/$ssl_certificate/g" \
-    -e "s/{ssl_certificate_key}/$ssl_certificate_key/g" \
-    $proxy_host_template_file > $proxy_host_file
 
 # Generate sidecar configuration
-echo "Generating sidecar configuration..."
-sidecar_config_file="./config/sidecar.yaml"
-sed \
-    -e "s|{supabase_url}|$supabase_url|g" \
-    -e "s|{supabase_realtime_url}|$supabase_realtime_url|g" \
-    -e "s|{supabase_anon_key}|$supabase_anon_key|g" \
-    -e "s|{containers_prefix}|$containers_prefix|g" \
-    -e "s|{chain_id}|$chain_id|g" \
-    config/sidecar-config-template.yaml > $sidecar_config_file
+if [ "$SIDECAR_ENABLED" = "true" ]; then
+    echo "Generating sidecar configuration..."
+    > "./config/sidecar.yaml"
+    apply_template "./config/sidecar-config.yaml.template" "./config/sidecar.yaml"
+    echo "Adding sidecar configuration..."
+    apply_template "./config/sidecar-docker.yaml.template" "$dockercompose_file"
+fi
+
+# Append verifier configuration if not using eth_bytecode_db
+if [ "$verifier_type" != "eth_bytecode_db" ]; then
+    echo "Adding verifier configuration..."
+    apply_template "./config/verifier-docker.yaml.template" "$dockercompose_file"
+fi
+
+# If using external database, update the database URLs
+if [ -z "$DATABASE_URL" ]; then
+    echo "Adding database configuration..."
+    apply_template "./config/database-docker.yaml.template" "$dockercompose_file"
+fi
 
 # Download required files
 echo "Downloading required files..."
