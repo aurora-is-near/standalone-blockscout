@@ -320,8 +320,5 @@ if [ -z "$DATABASE_URL" ]; then
     apply_template "./config/database-docker.yaml.template" "$dockercompose_file"
 fi
 
-# Download required files
-echo "Downloading required files..."
-/bin/bash ./download.sh
 
 echo "Installation completed successfully!"
