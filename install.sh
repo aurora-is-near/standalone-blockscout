@@ -288,8 +288,10 @@ done
 echo "Generating proxy configurations..."
 
 # Generate proxy configuration
-> "./data/proxy/default.conf.template"
-apply_template "./config/proxy/default.conf.template" "./data/proxy/default.conf.template"
+proxy_dir_file="./data/proxy/default.conf.template"
+mkdir -p "$(dirname "$proxy_dir_file")"
+> "$proxy_dir_file"
+apply_template "./config/proxy/default.conf.template" "$proxy_dir_file"
 
 # Generate host proxy configuration
 proxy_host_file="./data/host_proxy/host.conf"
