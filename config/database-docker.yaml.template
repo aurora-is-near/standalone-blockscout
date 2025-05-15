@@ -1,5 +1,5 @@
   db-init:
-    image: postgres:15
+    image: postgres:17
     container_name: '{containers_prefix}db-init'
     volumes:
       - ./data/blockscout-db-data:/var/lib/postgresql/data
@@ -15,7 +15,7 @@
     depends_on:
       db-init:
         condition: service_completed_successfully
-    image: postgres:15
+    image: postgres:17
     user: 2000:2000
     shm_size: 256m
     restart: always
