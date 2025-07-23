@@ -107,8 +107,11 @@ services:
       - "./data/proxy:/etc/nginx/templates"
     restart: always
     environment:
+      CONTAINERS_PREFIX: {containers_prefix}
       BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://172.{network_octet}.0.12:4000}
       FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://172.{network_octet}.0.10:3000}
+    env_file:
+      - config/sidecar-injected.env
     ports:
       - "{blockscout_port}:80"
       - "{stats_service_port}:8080"

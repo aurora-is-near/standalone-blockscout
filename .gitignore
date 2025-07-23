@@ -28,3 +28,5 @@ dns
 # Add to existing .gitignore
 .postgres_password
 deploy-silos.sh
+restart-silos.sh
+stop-silos.sh

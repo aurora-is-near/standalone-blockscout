@@ -8,6 +8,8 @@ backendServiceName: "backend"
 backendContainerName: "{containers_prefix}backend"
 statsServiceName: "stats"
 statsContainerName: "{containers_prefix}stats"
+proxyServiceName: "proxy"
+proxyContainerName: "{containers_prefix}proxy"
 table: "silos"
 chainId: {chain_id}
 projectName: {containers_prefix}blockscout
