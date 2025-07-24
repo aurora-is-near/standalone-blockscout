@@ -104,7 +104,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
-      - "./data/proxy:/etc/nginx/templates"
+      - "${host_proxy_path}:/etc/nginx/templates"
     restart: always
     environment:
       CONTAINERS_PREFIX: {containers_prefix}

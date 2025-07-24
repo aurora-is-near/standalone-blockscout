@@ -42,6 +42,10 @@ DEPLOY_DIR="standalone-blockscout-$NAMESPACE"
 data_dir="$REMOTE_DIR/$DEPLOY_DIR"
 echo "Data directory: $data_dir"
 
+# Set proxy path for Docker volumes
+host_proxy_path=$(realpath ./data/proxy)
+echo "Host proxy path: $host_proxy_path"
+
 # Check for required environment variables
 required_vars="NAME NAMESPACE RPC_URL CHAIN_ID GENESIS BLOCKSCOUT_PROTOCOL RPC_PROTOCOL CURRENCY_SYMBOL VERIFIER_TYPE CPU_LIMIT POSTGRES_RO_PASSWORD"
 for var in $required_vars; do
@@ -264,6 +268,7 @@ apply_template() {
         -e "s|{supabase_anon_key}|$supabase_anon_key|g" \
         -e "s/{ssl_certificate}/$ssl_certificate/g" \
         -e "s/{ssl_certificate_key}/$ssl_certificate_key/g" \
+        -e "s|{host_proxy_path}|$host_proxy_path|g" \
         "$source_file" >> "$dest_file"
 }
 
