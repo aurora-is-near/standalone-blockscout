@@ -54,6 +54,28 @@ server {
         }
     }
 
+    set $sidecar_upstream http://${CONTAINERS_PREFIX}sidecar:8080;
+
+    location ~ ^/api/v1/(?:chains/\d+/token-infos/.+|(?:tokens|blockscout/tokens)) {
+        proxy_pass $sidecar_upstream$request_uri;
+
+        proxy_hide_header Access-Control-Allow-Origin;
+        proxy_hide_header Access-Control-Allow-Methods;
+        add_header 'Access-Control-Allow-Origin' '${BLOCKSCOUT_HTTP_PROTOCOL}://${EXPLORER_URL}' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        add_header 'Access-Control-Allow-Methods' 'PUT, GET, POST, OPTIONS, DELETE, PATCH' always;
+    }
+
+    location /sidecar/ {
+        proxy_pass $sidecar_upstream/;  # note trailing slash to drop the /sidecar/ prefix
+
+        proxy_hide_header Access-Control-Allow-Origin;
+        proxy_hide_header Access-Control-Allow-Methods;
+        add_header 'Access-Control-Allow-Origin' '${BLOCKSCOUT_HTTP_PROTOCOL}://${EXPLORER_URL}' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        add_header 'Access-Control-Allow-Methods' 'PUT, GET, POST, OPTIONS, DELETE, PATCH' always;
+    }
+
     location = /api-docs {
         proxy_pass            ${FRONT_PROXY_PASS};
     }

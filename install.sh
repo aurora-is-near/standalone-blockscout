@@ -85,6 +85,19 @@ else
     database_name="blockscout"
 fi
 
+# Generate sidecar auth password
+sidecar_auth_password_file="$data_dir/.sidecar_auth_password"
+if [ -f "$sidecar_auth_password_file" ]; then
+    echo "Reading existing sidecar auth password..."
+    sidecar_auth_password=$(cat "$sidecar_auth_password_file")
+else
+    echo "Generating new sidecar auth password..."
+    sidecar_auth_password=$(openssl rand -hex 16)
+    # Ensure data directory exists
+    mkdir -p "$data_dir"
+    echo "$sidecar_auth_password" > "$sidecar_auth_password_file"
+fi
+
 # Assign environment variables to local variables for easier use
 name=$NAME
 rpc_url=$RPC_URL
@@ -269,6 +282,7 @@ apply_template() {
         -e "s/{ssl_certificate}/$ssl_certificate/g" \
         -e "s/{ssl_certificate_key}/$ssl_certificate_key/g" \
         -e "s|{host_proxy_path}|$host_proxy_path|g" \
+        -e "s/{sidecar_auth_password}/$sidecar_auth_password/g" \
         "$source_file" >> "$dest_file"
 }
 
