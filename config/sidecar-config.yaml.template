@@ -14,3 +14,12 @@ table: "silos"
 chainId: {chain_id}
 projectName: {containers_prefix}blockscout
 pathToEnvFile: "/app/config/sidecar-injected.env"
+
+blockscoutDatabaseUrl: {database_url}?sslmode=disable
+sidecarDatabaseUrl: {database_url}-sidecar?sslmode=disable
+httpPort: "8080"
+cors:
+  allowedOrigins: "{blockscout_http_protocol}://{explorer_url}"
+auth:
+  username: "aurora"
+  password: "{sidecar_auth_password}"
