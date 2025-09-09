@@ -20,7 +20,6 @@ echo "Step 2: Running docker compose services..."
 docker compose up -d db
 docker compose run --rm db_ro_user_setup
 docker compose run --rm db_sidecar_user_setup
-docker compose run --rm db-init
 
 # Wait for database to be ready
 echo "Waiting for database to be ready..."

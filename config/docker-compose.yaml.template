@@ -33,6 +33,7 @@ services:
     depends_on:
       - redis_db
       - db_ro_user_setup
+      - db_sidecar_user_setup
       {depends_on_db}
     command: sh -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     env_file:
