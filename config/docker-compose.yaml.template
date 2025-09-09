@@ -141,3 +141,19 @@ services:
     depends_on: {depends_on_db_list}
     labels:
       com.docker.compose.ephemeral: "true"
+
+  db_sidecar_user_setup:
+    image: postgres:17
+    container_name: '{containers_prefix}db-sidecar-setup'
+    restart: "no"
+    environment:
+      - DATABASE_URL={database_url}
+      - SIDECAR_AUTH_PASSWORD={sidecar_auth_password}
+    volumes:
+      - ./config/init_sidecar_user.sh:/docker-entrypoint.sh
+    entrypoint: ["sh", "/docker-entrypoint.sh"]
+    networks:
+      - {containers_prefix}network
+    depends_on: {depends_on_db_list}
+    labels:
+      com.docker.compose.ephemeral: "true"

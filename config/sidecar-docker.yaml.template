@@ -2,21 +2,13 @@
     command:
       - sh
       - -c
-      - |
-        echo "Setting up sidecar database user..."
-        chmod +x /app/config/init_sidecar_user.sh
-        /app/config/init_sidecar_user.sh
-        echo "Starting sidecar service..."
-        /app/app sidecar --config /app/config/sidecar.yaml
+      - /app/app sidecar --config /app/config/sidecar.yaml
     container_name: {containers_prefix}sidecar
     image: ghcr.io/aurora-is-near/blockscout-vc:latest
     networks:
       - {containers_prefix}network
     pull_policy: always
     restart: unless-stopped
-    environment:
-      - DATABASE_URL={database_url}
-      - SIDECAR_AUTH_PASSWORD={sidecar_auth_password}
     volumes:
       - ./config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
